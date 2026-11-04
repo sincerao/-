@@ -121,6 +121,24 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
 .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;margin:0 auto;animation:spn .8s linear infinite}
 .more .spin{width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle}
 @keyframes spn{to{transform:rotate(360deg)}}
+.skwrap{animation:up .3s ease both}
+.card.sk{pointer-events:none}
+.sk-b{display:block;background:linear-gradient(90deg,rgba(255,255,255,.06) 25%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.06) 75%);background-size:200% 100%;animation:skm 1.4s ease-in-out infinite}
+.sk-av{width:38px;height:38px;border-radius:50%;flex-shrink:0}
+.sk-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.sk-n{height:13px;width:42%;border-radius:6px}
+.sk-t{height:10px;width:24%;border-radius:6px}
+.sk-tx{display:flex;flex-direction:column;gap:9px;margin:0 0 14px}
+.sk-tx .sk-b{height:14px;width:100%;border-radius:6px}
+.sk-tx .w2{width:82%}
+.sk-tx .w3{width:56%}
+.sk-opts{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.sk-opts .sk-b{height:44px;width:100%;border-radius:13px}
+.sk-pill{height:28px;width:58px;border-radius:99px}
+.sk-pill.sm{width:44px}
+@keyframes skm{0%{background-position:100% 0}100%{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.sk-b{animation:none}}
+
 .sec{display:flex;align-items:center;gap:8px;margin:6px 4px 12px;font-size:13px;font-weight:700;color:var(--text)}
 .sec .ct{font-style:normal;background:rgba(255,255,255,.16);color:#d6d6d6;border-radius:99px;font-size:11.5px;font-weight:700;padding:1px 8px;line-height:1.6}
 .sec .mk{margin-left:auto;background:none;border:0;color:#d6d6d6;font-size:12.5px;font-weight:600;cursor:pointer;padding:4px 0}
@@ -923,16 +941,17 @@ function sharedWatch(){
    /* regras não deixam ler uma publicação sozinha: cai para a lista normal, que já funciona */
    S.gerr=(e&&e.code)||"erro";S.sst="fb";if(!S.un)listen();render(true)})}
  catch(e){S.gerr="erro";S.sst="fb";if(!S.un)listen();render(true)}}
+function skelFeed(n){var h='',i,k;for(i=0;i<(n||3);i++){k=i%2;h+='<div class="card sk" aria-hidden="true"><div class="top"><i class="sk-b sk-av"></i><div class="sk-who"><i class="sk-b sk-n"></i><i class="sk-b sk-t"></i></div></div>'+'<div class="sk-tx"><i class="sk-b"></i><i class="sk-b w2"></i>'+(k?'':'<i class="sk-b w3"></i>')+'</div>'+(k?'<div class="sk-opts"><i class="sk-b"></i><i class="sk-b"></i></div>':'')+'<div class="act"><i class="sk-b sk-pill"></i><i class="sk-b sk-pill sm"></i></div></div>'}return '<div class="skwrap" role="status" aria-label="Carregando publicações">'+h+'</div>'}
 function body(){
  if(SETUP)return '<div class="card note"><b>Falta configurar o Firebase</b><p>Cole o seu <code>firebaseConfig</code> no começo do script deste arquivo, ative o login <code>Anônimo</code> e publique as regras do arquivo <code>firestore.rules</code>.</p></div>';
  var pre="";
  if(S.sp){var st=sharedState();
-  if(st==="load")return S.spto?failBox():'<div class="empty"><div class="spin"></div></div>';
+  if(st==="load")return S.spto?failBox():skelFeed(1);
   if(st==="err")return failBox();
   if(st==="gone")pre='<div class="empty nf gone"><div class="eic">'+BAN+'</div><b>Publicação Indisponível</b>Ela foi apagada ou já expirou.</div>';
   else if(S.fresh[S.sp]){delete S.fresh[S.sp];markSeen(S.sp)}}
  if(S.err)return pre+'<div class="empty nf"><div class="eic">'+BAN+'</div><b>'+esc(S.err)+'</b>'+SRVW+'</div><button class="more" data-act="reload">Tentar de novo</button>';
- if(!S.loaded)return pre+'<div class="empty"><div class="spin"></div></div>';
+ if(!S.loaded)return pre+skelFeed(3);
  var A=(S.tab===1?mine():feedList()).filter(alive);
  /* garante que a publicação do link esteja entre as exibidas, mesmo se for antiga */
  if(S.sp&&S.tab===0&&sharedState()==="ok"){var ix=-1;A.forEach(function(x,i){if(x.id===S.sp)ix=i});if(ix>=S.lim)S.lim=Math.ceil((ix+1)/15)*15}
