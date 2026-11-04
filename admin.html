@@ -63,6 +63,10 @@ input[type=datetime-local]{margin-bottom:10px}
 .toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#fff;color:#000;font-size:14px;font-weight:600;padding:11px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:opacity .25s,transform .35s var(--ease);max-width:90vw;text-align:center;z-index:40}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.alist{margin-top:14px}
+.arow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+.arow span{min-width:0;overflow-wrap:anywhere}
+.arow button{flex-shrink:0;background:var(--card3);color:var(--bad);border:0;border-radius:99px;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -111,6 +115,15 @@ input[type=datetime-local]{margin-bottom:10px}
    <p class="pv" id="pv"></p>
    <button class="go" id="lock">Trancar site</button>
   </div>
+
+  <div class="card">
+   <h2>Acesso ao site</h2>
+   <p class="s">Digite o e-mail Google exato da pessoa. Ela entra no site principal com esse e-mail e continua anônima.</p>
+   <label class="l" for="aem">E-mail Google</label>
+   <input id="aem" type="email" inputmode="email" autocapitalize="none" autocorrect="off" autocomplete="off" placeholder="nome@gmail.com">
+   <button class="go" id="aadd">Liberar acesso</button>
+   <div id="alist" class="alist"></div>
+  </div>
  </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -129,7 +142,7 @@ const firebaseConfig={
    O mesmo e-mail precisa estar escrito nas regras (função isAdmin). */
 const V="https://www.gstatic.com/firebasejs/10.14.1/";
 const [A,AU,FS]=await Promise.all([import(V+"firebase-app.js"),import(V+"firebase-auth.js"),import(V+"firebase-firestore.js")]);
-const {initializeApp}=A,{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}=AU,{getFirestore,doc,onSnapshot,setDoc,Timestamp,serverTimestamp}=FS;
+const {initializeApp}=A,{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}=AU,{getFirestore,doc,onSnapshot,setDoc,deleteDoc,collection,Timestamp,serverTimestamp}=FS;
 /* app separado ("admin"): não mexe no login anônimo do site */
 const app=initializeApp(firebaseConfig,"admin"),auth=getAuth(app),db=getFirestore(app);
 
@@ -163,7 +176,7 @@ getRedirectResult(auth).catch(x=>{const m=x&&ERR[x.code];g("lerr").textContent=m
 g("out").onclick=()=>signOut(auth);
 
 /* ===== estado do trancamento ===== */
-let LK=null,un=null;
+let LK=null,un=null,uAcc=null;
 const lockRef=()=>doc(db,"config","lock");
 function isOn(d){if(!d||d.locked!==true)return false;if(d.mode==="timed"){const ms=d.until&&d.until.toMillis?d.until.toMillis():0;return ms>Date.now()}return d.mode==="indefinite"}
 function showStatus(){
@@ -182,7 +195,7 @@ onAuthStateChanged(auth,u=>{
  if(u&&String(u.email||"").toLowerCase()!==ADMIN){negar();return}
  const in_=!!u;
  g("login").classList.toggle("hide",in_);g("panel").classList.toggle("hide",!in_);g("out").classList.toggle("hide",!in_);
- if(in_){listen();pv()}else{if(un){un();un=null}LK=null}});
+ if(in_){listen();listenAcc();pv()}else{if(un){un();un=null}if(uAcc){uAcc();uAcc=null}LK=null}});
 
 /* ===== formulário ===== */
 let mode=0,mins=60;
@@ -221,6 +234,27 @@ async function destrancar(){
  catch(e){toast(e&&e.code==="permission-denied"?"Sem permissão: este e-mail não é o do admin nas regras":"Não foi possível destrancar")}
  g("unl").disabled=false}
 g("lock").onclick=trancar;g("unl").onclick=destrancar;
+/* ===== acesso ao site: lista de e-mails liberados (coleção access, ID = e-mail) ===== */
+const AEM=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function listenAcc(){
+ if(uAcc)return;
+ uAcc=onSnapshot(collection(db,"access"),s=>renderAcc(s.docs.map(d=>d.id).sort()),()=>{g("alist").textContent="Sem acesso à lista. Confira as regras do Firestore."})}
+function renderAcc(ids){
+ const L=g("alist");L.textContent="";
+ if(!ids.length){const p=document.createElement("p");p.className="s";p.textContent="Ninguém liberado ainda.";L.appendChild(p);return}
+ ids.forEach(id=>{const r=document.createElement("div");r.className="arow";const s=document.createElement("span");s.textContent=id;const b=document.createElement("button");b.textContent="Remover";b.onclick=()=>tirar(id);r.append(s,b);L.appendChild(r)})}
+async function liberar(){
+ const e=g("aem").value.trim().toLowerCase();
+ if(!AEM.test(e)){toast("Digite um e-mail válido");return}
+ g("aadd").disabled=true;
+ try{await setDoc(doc(db,"access",e),{ok:true,at:serverTimestamp(),by:auth.currentUser.email||""});g("aem").value="";toast("Acesso liberado")}
+ catch(x){toast(x&&x.code==="permission-denied"?"Sem permissão: confira as regras do Firestore":"Não foi possível liberar")}
+ g("aadd").disabled=false}
+async function tirar(e){
+ if(!confirm("Remover o acesso de "+e+"?"))return;
+ try{await deleteDoc(doc(db,"access",e));toast("Acesso removido")}
+ catch(x){toast("Não foi possível remover")}}
+g("aadd").onclick=liberar;
 setMode(0);
 </script>
 </body>

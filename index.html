@@ -706,9 +706,20 @@ body>.online i{width:6px;height:6px;flex-shrink:0}
 @media (hover:hover){.card:hover{transform:translateY(-1px)}}
 body>.online{animation:up .45s var(--ease) both}
 .logo i{animation-duration:4.8s}
+#gate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg);text-align:center}
+#gate.hide{display:none}
+#gate .gc{width:min(320px,100%)}
+#gate .logo{font-size:30px;margin-bottom:12px}
+#gate p{margin:0 0 24px;color:var(--text2);font-size:15px}
+#gate .gbtn,#gate .wa{display:flex;align-items:center;justify-content:center;width:100%;height:50px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit;border:0;margin-bottom:10px}
+#gate .gbtn{background:var(--acc);color:var(--on-acc)}
+#gate .wa{background:var(--card2);color:var(--text);border:1px solid var(--line2)}
+#gate .gbtn svg{width:18px;height:18px;flex-shrink:0}
+#gate .gE{color:var(--bad);font-size:13px;min-height:18px;margin-top:6px}
+#gate.busy .gbtn,#gate.busy .wa{display:none}
 </style>
 </head>
-<body>
+<body><div id="gate" role="dialog" aria-labelledby="gT"><div class="gc"><div class="logo" id="gT">Sincerão</div><p id="gP">entre com o e-mail autorizado.</p><button class="gbtn" id="gG"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Entrar com o Google</button><a class="wa" id="gW" href="https://wa.me/5553991861682?text=Me%20d%C3%A1%20a%20autoriza%C3%A7%C3%A3o%20pro%20site." target="_blank" rel="noopener">Pedir autorização</a><div class="gE" id="gE"></div></div></div></div>
 <div class="lkb" id="lkb" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div><span id="lkt"></span><small id="lkc" style="display:none"></small></div></div>
 <div class="online" id="onl"><i></i><span id="ont"></span></div>
 <div class="wrap">
@@ -781,7 +792,7 @@ const SRVW="No momento o servidor está indisponível, aguarde.";
 const BAN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>';
 const CHAT='<svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
 const S={boot:true,bt:Date.now(),tab:0,kind:"post",feed:[],loaded:false,uid:null,ready:false,started:false,myV:{},myM:{},myL:{},myW:{},sids:null,err:"",seen:{},pop:0,vf:0,del:"",lim:15,more:false,busy:false,un:null,vis:{},fresh:{},known:{}};
-let LAST="",db,initializeApp,getAuth,signInAnonymously,onAuthStateChanged,AUTH,getFirestore,collection,doc,addDoc,deleteDoc,writeBatch,query,orderBy,limit,onSnapshot,serverTimestamp,increment,deleteField,setDoc,where,getCountFromServer,getDocs,Timestamp,initializeFirestore,persistentLocalCache,persistentMultipleTabManager;
+let LAST="",db,initializeApp,getAuth,signInAnonymously,onAuthStateChanged,linkWithPopup,signInWithPopup,signInWithCredential,GoogleAuthProvider,AUTH,getFirestore,collection,doc,addDoc,deleteDoc,writeBatch,query,orderBy,limit,onSnapshot,serverTimestamp,increment,deleteField,setDoc,where,getCountFromServer,getDocs,Timestamp,initializeFirestore,persistentLocalCache,persistentMultipleTabManager;
 
 function g(id){return document.getElementById(id)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -1208,6 +1219,38 @@ function start(){
  if(S.sp)sharedWatch();listen()}
 
 
+/* ===== acesso: conta Google liberada pelo admin (a identidade pública continua anônima) ===== */
+S.acc="no";S.accE="";var ACU=null;
+function gEmail(u){var p=u&&u.providerData?u.providerData.filter(function(x){return x&&x.providerId==="google.com"})[0]:null;return p&&p.email?String(p.email).trim().toLowerCase():""}
+function accWatch(u){
+ var e=gEmail(u);
+ if(ACU){ACU();ACU=null}
+ S.accE=e;
+ if(!e){S.acc="no";accRender();return}
+ S.acc="load";accRender();
+ try{ACU=onSnapshot(doc(db,"access",e),function(s){S.acc=s.exists()?"ok":"no";accRender();if(S.acc==="ok"&&S.uid)start()},function(){S.acc="no";accRender()})}catch(x){S.acc="no"}
+}
+function accErr(m){g("gE").textContent=m}
+function accRender(){
+ var gate=g("gate");
+ if(S.acc==="ok"){gate.classList.add("hide");return}
+ gate.classList.remove("hide");
+ gate.classList.toggle("busy",!AUTH||S.acc==="load");
+}
+async function gLogin(){
+ var pr=new GoogleAuthProvider();pr.setCustomParameters({prompt:"select_account"});
+ var u=AUTH&&AUTH.currentUser;
+ try{
+  if(u&&u.isAnonymous){
+   try{await linkWithPopup(u,pr)}
+   catch(x){if(x&&x.code==="auth/credential-already-in-use"){await signInWithCredential(AUTH,GoogleAuthProvider.credentialFromError(x));location.reload();return}throw x}
+  }else{await signInWithPopup(AUTH,pr)}
+  accWatch(AUTH.currentUser);
+ }catch(x){
+  if(x&&(x.code==="auth/popup-closed-by-user"||x.code==="auth/cancelled-popup-request"))return;
+  accErr("Não foi possível entrar com o Google");
+ }
+}
 var AR=0;
 function authFail(){S.err="Ocorreu um erro na autenticação";render();clearTimeout(AR);AR=setTimeout(function(){if(!S.uid&&AUTH)signInAnonymously(AUTH).catch(authFail)},8000)}
 async function init(){
@@ -1218,12 +1261,12 @@ async function init(){
   var V="https://www.gstatic.com/firebasejs/10.14.1/";
   var m=await Promise.all([import(V+"firebase-app.js"),import(V+"firebase-auth.js"),import(V+"firebase-firestore.js")]);
   S.st="login";({initializeApp}=m[0]);
-  ({getAuth,signInAnonymously,onAuthStateChanged}=m[1]);
+  ({getAuth,signInAnonymously,onAuthStateChanged,linkWithPopup,signInWithPopup,signInWithCredential,GoogleAuthProvider}=m[1]);
   ({getFirestore,collection,doc,addDoc,deleteDoc,writeBatch,query,orderBy,limit,onSnapshot,serverTimestamp,increment,deleteField,setDoc,where,getCountFromServer,getDocs,Timestamp,initializeFirestore,persistentLocalCache,persistentMultipleTabManager}=m[2]);
   var app=initializeApp(firebaseConfig),auth=getAuth(app);try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
   watchLock();
   AUTH=auth;
-  onAuthStateChanged(auth,function(u){if(u){S.uid=u.uid;S.st="feed";if(S.err==="Ocorreu um erro na autenticação"){S.err="";render()}start()}},function(){authFail()});
+  onAuthStateChanged(auth,function(u){accWatch(u);if(u){S.uid=u.uid;S.st="feed";if(S.err==="Ocorreu um erro na autenticação"){S.err="";render()}if(S.acc==="ok")start()}},function(){authFail()});
   signInAnonymously(auth).catch(authFail);
  }catch(e){S.err="Falha ao se conectar com o servidor.";render()}}
 
@@ -1244,7 +1287,7 @@ g("sheet").addEventListener("input",updGo);g("t").addEventListener("input",updCn
 g("dyes").onclick=doDel;g("lkx").onclick=closeDlg;g("dno").onclick=closeDlg;g("cback").onclick=closeDlg;
 function openWel(){g("wback").classList.add("show");g("wel").classList.add("show")}
 function showWel(){try{if(localStorage.getItem("sinc_wel"))return}catch(e){}openWel()}
-g("help").onclick=openWel;
+g("help").onclick=openWel;g("gG").onclick=gLogin;
 g("wok").onclick=function(){try{localStorage.setItem("sinc_wel","1")}catch(e){}g("wback").classList.remove("show");g("wel").classList.remove("show")};
 var HT=0;
 document.addEventListener("visibilitychange",function(){
@@ -1255,7 +1298,7 @@ try{var qs=new URLSearchParams(location.search);if(qs.has("p")){var pv=(qs.get("
 /* ===== trancamento do site (documento config/lock, controlado pelo admin.html) ===== */
 var LK={d:null,ms:0},LKP="",LKU=null;
 function lkOn(){var d=LK.d;if(!d||d.locked!==true)return false;if(d.mode==="timed")return LK.ms>Date.now();return d.mode==="indefinite"}
-function lkBlock(){if(lkOn()){toast("O site está trancado");return true}return false}
+function lkBlock(){if(lkOn()){toast("O site está trancado");return true}if(S.acc!=="ok")return true;return false}
 /* tudo pelo relógio e pelo fuso do celular: a data de liberação vem do Firebase (instante exato) e é mostrada na hora local */
 function lkDate(ms){var t=new Date(ms);return f2(t.getDate())+"/"+f2(t.getMonth()+1)+"/"+t.getFullYear()+" às "+f2(t.getHours())+":"+f2(t.getMinutes())}
 function lkCd(ms){var s=Math.max(0,Math.ceil(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return(d?d+(d===1?" dia ":" dias "):"")+f2(h)+":"+f2(m)+":"+f2(s%60)}
