@@ -691,13 +691,29 @@ body.so{overflow:hidden}
 .card .act .del svg{width:17px;height:17px}
 .card .act .exb{flex:0 0 100%;order:9;margin:0 0 6px;padding:0;font-size:12px}
 @media (hover:hover){.card .act .lk:hover{background:none;color:var(--like)}.card .act .shr:hover,.card .act .del:hover{background:none}.card .act .shr:hover{color:var(--text)}}
+
+/* ===== online: traço fino preso embaixo da barra de abas ===== */
+body>.online{display:none;position:fixed;left:0;right:0;top:0;z-index:24;height:22px;min-height:0;margin:0;padding:0 12px;border:0;border-radius:0;border-bottom:1px solid var(--line);background:rgba(10,10,11,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);justify-content:center;gap:6px;font-size:11px;color:var(--muted);overflow:hidden}
+body>.online #ont{flex-direction:row;align-items:center;gap:6px;min-width:0;overflow:hidden;white-space:nowrap}
+body>.online .ol1{line-height:1;white-space:nowrap}
+body>.online .ol2{line-height:1;white-space:nowrap;max-width:none;min-width:0;font-size:11px;opacity:.7;overflow:hidden;text-overflow:ellipsis}
+body>.online .ol2::before{content:"·";margin-right:6px;opacity:.6}
+body>.online i{width:6px;height:6px;flex-shrink:0}
+
+/* ===== toques de vida (sutis) ===== */
+.lk,.shr,.del,.help,.more,.pubd,.opt{transition:transform .18s var(--ease),background .25s,color .25s,border-color .25s}
+.lk:active,.shr:active,.del:active,.help:active,.more:active,.pubd:active{transform:scale(.93)}
+@media (hover:hover){.card:hover{transform:translateY(-1px)}}
+body>.online{animation:up .45s var(--ease) both}
+.logo i{animation-duration:4.8s}
 </style>
 </head>
 <body>
 <div class="lkb" id="lkb" role="status" aria-live="polite"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><div><span id="lkt"></span><small id="lkc" style="display:none"></small></div></div>
+<div class="online" id="onl"><i></i><span id="ont"></span></div>
 <div class="wrap">
 <aside class="rail">
-<header><span class="logo">Sincerão</span><div class="hr"><div class="online" id="onl"><i></i><span id="ont"></span></div><button class="help" id="help" aria-label="Sobre o Sincerão"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div></header>
+<header><span class="logo">Sincerão</span><div class="hr"><button class="help" id="help" aria-label="Sobre o Sincerão"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div></header>
 <button class="pubd" id="fab2" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Publicar</button>
 </aside>
 <main class="col">
@@ -764,7 +780,7 @@ const SHARE='<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="
 const SRVW="No momento o servidor está indisponível, aguarde.";
 const BAN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>';
 const CHAT='<svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
-const S={tab:0,kind:"post",feed:[],loaded:false,uid:null,ready:false,started:false,myV:{},myM:{},myL:{},myW:{},sids:null,err:"",seen:{},pop:0,vf:0,del:"",lim:15,more:false,busy:false,un:null,vis:{},fresh:{},known:{}};
+const S={boot:true,bt:Date.now(),tab:0,kind:"post",feed:[],loaded:false,uid:null,ready:false,started:false,myV:{},myM:{},myL:{},myW:{},sids:null,err:"",seen:{},pop:0,vf:0,del:"",lim:15,more:false,busy:false,un:null,vis:{},fresh:{},known:{}};
 let LAST="",db,initializeApp,getAuth,signInAnonymously,onAuthStateChanged,AUTH,getFirestore,collection,doc,addDoc,deleteDoc,writeBatch,query,orderBy,limit,onSnapshot,serverTimestamp,increment,deleteField,setDoc,where,getCountFromServer,getDocs,Timestamp,initializeFirestore,persistentLocalCache,persistentMultipleTabManager;
 
 function g(id){return document.getElementById(id)}
@@ -890,7 +906,8 @@ function loadCache(){try{var c=JSON.parse(localStorage.getItem(CK)||"null");if(c
 function conv(d){var x=d.data({serverTimestamps:"estimate"});x.id=d.id;x.ms=x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now();x.exp=x.expireAt&&x.expireAt.toMillis?x.expireAt.toMillis():x.ms+TTL;delete x.createdAt;delete x.expireAt;return x}
 function clean(x){if(!alive(x)&&x.uid===S.uid&&!CLN[x.id]&&!lkOn()){CLN[x.id]=1;deleteDoc(doc(db,"posts",x.id)).catch(function(){})}}
 function upsert(x){var i=-1,k;for(k=0;k<S.feed.length;k++)if(S.feed[k].id===x.id){i=k;break}if(i<0)S.feed.push(x);else S.feed[i]=x}
-function afterMerge(){S.feed=S.feed.filter(alive);sortFeed();track(S.feed);S.loaded=true;S.err="";render()}
+function bootDone(){var w=1200-(Date.now()-S.bt);if(w<=0){S.boot=false;return}if(S.bdt)return;S.bdt=1;setTimeout(function(){S.boot=false;render()},w)}
+function afterMerge(){S.feed=S.feed.filter(alive);sortFeed();track(S.feed);S.loaded=true;S.err="";bootDone();render()}
 
 function mine(){return S.feed.filter(function(x){return x.uid===S.uid})}
 
@@ -951,7 +968,7 @@ function body(){
   if(st==="gone")pre='<div class="empty nf gone"><div class="eic">'+BAN+'</div><b>Publicação Indisponível</b>Ela foi apagada ou já expirou.</div>';
   else if(S.fresh[S.sp]){delete S.fresh[S.sp];markSeen(S.sp)}}
  if(S.err)return pre+'<div class="empty nf"><div class="eic">'+BAN+'</div><b>'+esc(S.err)+'</b>'+SRVW+'</div><button class="more" data-act="reload">Tentar de novo</button>';
- if(!S.loaded)return pre+skelFeed(3);
+ if(!S.loaded||S.boot)return pre+skelFeed(3);
  var A=(S.tab===1?mine():feedList()).filter(alive);
  /* garante que a publicação do link esteja entre as exibidas, mesmo se for antiga */
  if(S.sp&&S.tab===0&&sharedState()==="ok"){var ix=-1;A.forEach(function(x,i){if(x.id===S.sp)ix=i});if(ix>=S.lim)S.lim=Math.ceil((ix+1)/15)*15}
@@ -1012,7 +1029,7 @@ var LSIG="";
 function sig(){
  var pf="";
  if(S.sp&&!SETUP){var sp=S.sp==="#"?null:find(S.sp),ss=sharedState();pf="sp|"+S.sp+"|"+ss+(S.spto?1:0)+"|"+(ss==="ok"&&sp?(S.myL[sp.id]?"l":"")+(S.myV[sp.id]!==undefined?"v"+S.myV[sp.id]:"")+(sp.m&&S.myM[sp.id]?"m"+Object.keys(S.myM[sp.id]).sort().join("."):""):"")+"||"}
- if(SETUP||S.err||!S.loaded)return pf+"x"+S.err+S.loaded;
+ if(SETUP||S.err||!S.loaded||S.boot)return pf+"x"+S.err+S.loaded+(S.boot?"b":"");
  var A=(S.tab===1?mine():feedList()).filter(alive);
  return pf+S.tab+"|"+S.lim+"|"+A.length+"|"+A.slice(0,S.lim).map(function(p){return p.id+(S.fresh[p.id]?"n":"")+(S.myL[p.id]?"l":"")+(S.myV[p.id]!==undefined?"v"+S.myV[p.id]:"")+(p.m&&S.myM[p.id]?"m"+Object.keys(S.myM[p.id]).sort().join("."):"")}).join(",")}
 function patch(){
@@ -1161,17 +1178,18 @@ function listen(){
   S.feed=s.docs.map(function(d){var x=conv(d);ids[x.id]=1;clean(x);return x});
   if(!s.metadata.fromCache){S.srv=true;S.sids=ids;prune()}
   afterMerge()
- },function(e){S.gerr=(e&&e.code)||S.gerr||"erro";if(S.sst==="fb")S.sst="err";S.loaded=true;if(!S.feed.length)S.err="Servidor Indisponível";render()})}
+ },function(e){S.gerr=(e&&e.code)||S.gerr||"erro";if(S.sst==="fb")S.sst="err";S.loaded=true;S.boot=false;if(!S.feed.length)S.err="Servidor Indisponível";render()})}
 function more(){S.lim+=15;render(true)}
 
 /* ===== pessoas online: cada aparelho grava presence/{uid} a cada 30s; contagem = quem pingou nos últimos 75s =====
    O documento NÃO é apagado ao sair: o campo t guarda o "último momento ativo" (usado em "Último usuário ativo foi ...") */
 var PT=0,LASTO=0;
 function fmtLast(ms){try{var d=new Date(ms),o={day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"};if(d.getFullYear()!==new Date().getFullYear())o.year="numeric";return d.toLocaleString("pt-BR",o).replace(", "," às ")}catch(e){return""}}
+function placeOnline(){var t=document.querySelector('.tabs'),o=g('onl');if(!t||!o)return;var r=t.getBoundingClientRect();o.style.top=r.bottom+'px';o.style.left=r.left+'px';o.style.width=r.width+'px';o.style.right='auto'}
 function showOn(n,last){n=Math.max(1,n);
  var h='<span class="ol1"><b>'+n+'</b> online agora'+(n===1?' (você)':'')+'</span>';
  if(n===1&&last)h+='<span class="ol2">Último usuário ativo foi '+esc(fmtLast(last))+'</span>';
- g("ont").innerHTML=h;g("onl").style.display="flex"}
+ g("ont").innerHTML=h;g("onl").style.display="flex";placeOnline()}
 /* último outro usuário que esteve ativo (ignora o próprio uid) */
 function lastOther(){return getDocs(query(collection(db,"presence"),orderBy("t","desc"),limit(3))).then(function(s){
  var r=0;s.docs.forEach(function(d){if(r||d.id===S.uid)return;var t=d.data().t;if(t&&t.toMillis)r=t.toMillis()});return r})}
@@ -1273,6 +1291,8 @@ fltUi();
 try{localStorage.removeItem("sinc_rk");localStorage.removeItem("sinc_gate")}catch(e){}
 loadVis();loadVc();loadCache();resetOpts();render(true);init();showWel();
 setInterval(function(){render()},60000);setInterval(tickCd,1000);
+window.addEventListener("scroll",placeOnline,{passive:true});window.addEventListener("resize",placeOnline);
+setTimeout(function(){if(S.boot){S.boot=false;render()}},8000);
 
 /* ===== PC: botão Publicar da lateral, clique fora fecha, atalhos de teclado ===== */
 function focusSheet(){setTimeout(function(){if(!g("sheet").classList.contains("show"))return;var el=g(S.kind==="post"?"t":"q");if(el)el.focus()},140)}
