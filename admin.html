@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Sincerão · Admin</title>
+<style>
+:root{--bg:#000;--card:#111;--card2:#1a1a1a;--card3:#2a2a2a;--line:rgba(255,255,255,.07);--line2:rgba(255,255,255,.13);--text:#f2f2f2;--text2:#bdbdbd;--muted:#8a8a8a;--acc:#fff;--on-acc:#000;--bad:#ff6b6b;--ok:#34d27b;--ease:cubic-bezier(.32,.72,0,1);--sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--text);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit}
+button{transition:transform .2s var(--ease),background .25s,color .25s,border-color .25s,opacity .25s}
+button:active{transform:scale(.97)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc-b,rgba(255,255,255,.6));outline-offset:2px}
+.wrap{max-width:480px;margin:0 auto;padding:22px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px;margin-bottom:20px}
+.logo{font-size:24px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.logo i{font-style:normal}
+.logo small{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:0;margin-left:8px}
+.out{background:var(--card);border:1px solid var(--line);color:var(--text2);font-size:13px;font-weight:600;border-radius:99px;padding:8px 14px;cursor:pointer}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px;margin-bottom:12px}
+.card h2{font-size:16px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
+.card p.s{margin:0 0 14px;color:var(--muted);font-size:13px}
+
+/* status */
+.st{display:flex;align-items:center;gap:14px}
+.sic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:rgba(52,210,123,.12);color:var(--ok)}
+.sic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.st.lock .sic{background:rgba(255,107,107,.12);color:var(--bad)}
+.st b{display:block;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.st small{display:block;color:var(--text2);font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.unl{margin-top:14px;width:100%;height:48px;border-radius:14px;border:1px solid var(--line2);background:var(--card2);color:var(--text);font-size:15px;font-weight:700;cursor:pointer}
+
+/* escolha */
+.seg{position:relative;display:flex;background:var(--card2);border-radius:14px;padding:4px;margin-bottom:14px}
+.seg button{position:relative;z-index:1;flex:1;background:none;border:0;color:var(--muted);font-size:13.5px;font-weight:600;padding:10px 6px;cursor:pointer}
+.seg button:active{transform:none}
+.seg button.on{color:var(--text)}
+.pill{position:absolute;left:4px;top:4px;bottom:4px;width:calc(50% - 4px);border-radius:11px;background:var(--card3);transition:transform .4s var(--ease)}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.chips button{height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--text2);font-size:14px;font-weight:600;cursor:pointer}
+.chips button.on{background:var(--acc);color:var(--on-acc);border-color:var(--acc)}
+label.l{display:block;font-size:13px;font-weight:600;color:var(--text2);margin:2px 0 6px}
+input{width:100%;height:48px;border-radius:13px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:16px;padding:0 14px;margin-bottom:12px}
+input[type=datetime-local]{margin-bottom:10px}
+.pv{font-size:13px;color:var(--text2);background:var(--card2);border-radius:12px;padding:10px 12px;margin:0 0 14px;overflow-wrap:anywhere}
+.go{width:100%;height:50px;border-radius:14px;border:0;background:var(--acc);color:var(--on-acc);font-size:15px;font-weight:800;cursor:pointer}
+.go.gg{display:flex;align-items:center;justify-content:center;gap:10px}
+.go[disabled],.unl[disabled]{opacity:.5;pointer-events:none}
+.err{color:var(--bad);font-size:13px;margin:0 0 12px;min-height:0}
+.chips button.full{grid-column:1/-1}
+.dur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.dur label{display:block;font-size:12px;color:var(--muted);margin:0 0 4px;text-align:center}
+.dur input{margin-bottom:0;text-align:center}
+.hide{display:none!important}
+.toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#fff;color:#000;font-size:14px;font-weight:600;padding:11px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:opacity .25s,transform .35s var(--ease);max-width:90vw;text-align:center;z-index:40}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header><span class="logo">Sincerão<i>.</i><small>admin</small></span><button class="out hide" id="out">Sair</button></header>
+
+ <!-- login -->
+ <div class="card" id="login">
+  <h2>Entrar no admin</h2>
+  <p class="s">Só a conta Google do administrador tem acesso.</p>
+  <p class="err" id="lerr"></p>
+  <button class="go gg" id="enter"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Faça Login com o Google</button>
+ </div>
+
+ <!-- painel -->
+ <div id="panel" class="hide">
+  <div class="card">
+   <div class="st" id="st">
+    <div class="sic" id="sic"></div>
+    <div><b id="stt">Carregando…</b><small id="sts"></small></div>
+   </div>
+   <button class="unl hide" id="unl">Destrancar agora</button>
+  </div>
+
+  <div class="card">
+   <h2>Trancar o site</h2>
+   <p class="s">Enquanto estiver trancado, ninguém consegue publicar, curtir, votar nem apagar.</p>
+   <div class="seg"><div class="pill" id="pill"></div><button id="m0" class="on">Até eu destrancar</button><button id="m1">Liberar sozinho</button></div>
+   <div id="timed" class="hide">
+    <div class="chips" id="chips">
+     <button data-m="30">30 min</button><button data-m="60" class="on">1 hora</button><button data-m="180">3 horas</button>
+     <button data-m="360">6 horas</button><button data-m="720">12 horas</button><button data-m="1440">24 horas</button>
+     <button data-m="0" class="full">Personalizada</button>
+    </div>
+    <div id="custom" class="hide">
+     <label class="l">Liberar daqui a</label>
+     <div class="dur">
+      <div><label for="nd">dias</label><input id="nd" type="number" inputmode="numeric" min="0" max="365" placeholder="0"></div>
+      <div><label for="nh">horas</label><input id="nh" type="number" inputmode="numeric" min="0" max="999" placeholder="0"></div>
+      <div><label for="nm">minutos</label><input id="nm" type="number" inputmode="numeric" min="0" max="999" placeholder="0"></div>
+     </div>
+     <label class="l" for="dt">Ou escolha a data e a hora exatas (horário do seu celular)</label>
+     <input id="dt" type="datetime-local">
+    </div>
+   </div>
+   <p class="pv" id="pv"></p>
+   <button class="go" id="lock">Trancar site</button>
+  </div>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const firebaseConfig={
+  apiKey:"AIzaSyB9OBOaiY1yfz9d6Xs-QcdZoQ8TDzm8KWQ",
+  authDomain:"sincerao.firebaseapp.com",
+  projectId:"sincerao",
+  storageBucket:"sincerao.firebasestorage.app",
+  messagingSenderId:"791152889716",
+  appId:"1:791152889716:web:f3c7d7059971c841daa621",
+  measurementId:"G-TR0H6VNVEJ"
+};
+/* No Firebase: Authentication > Método de login > ative "Google".
+   Em Authentication > Configurações > Domínios autorizados, confira se o domínio onde você hospeda este arquivo está na lista.
+   O mesmo e-mail precisa estar escrito nas regras (função isAdmin). */
+const V="https://www.gstatic.com/firebasejs/10.14.1/";
+const [A,AU,FS]=await Promise.all([import(V+"firebase-app.js"),import(V+"firebase-auth.js"),import(V+"firebase-firestore.js")]);
+const {initializeApp}=A,{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signOut,onAuthStateChanged}=AU,{getFirestore,doc,onSnapshot,setDoc,Timestamp,serverTimestamp}=FS;
+/* app separado ("admin"): não mexe no login anônimo do site */
+const app=initializeApp(firebaseConfig,"admin"),auth=getAuth(app),db=getFirestore(app);
+
+const BR=-3*36e5,ADMIN="zarthur063@gmail.com";
+const g=id=>document.getElementById(id);
+const f2=n=>(n<10?"0":"")+n;
+let tt;function toast(t){const e=g("toast");e.textContent=t;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2400)}
+function fmt(ms){const t=new Date(ms);return f2(t.getDate())+"/"+f2(t.getMonth()+1)+"/"+t.getFullYear()+" às "+f2(t.getHours())+":"+f2(t.getMinutes())}
+function dur(ms){let m=Math.round(ms/60000);if(m<1)m=1;const d=Math.floor(m/1440),h=Math.floor(m%1440/60),n=m%60,p=[];
+ if(d)p.push(d+(d===1?" dia":" dias"));if(h)p.push(h+(h===1?" hora":" horas"));if(n)p.push(n+(n===1?" minuto":" minutos"));
+ return p.length>1?p.slice(0,-1).join(", ")+" e "+p[p.length-1]:p[0]}
+/* "2026-10-21T18:30" digitado vale no horário do celular -> milissegundos */
+function parseBR(v){const t=new Date(v).getTime();return isNaN(t)?0:t}
+
+const LOCKI='<svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const OPENI='<svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></svg>';
+
+/* ===== login ===== */
+const ERR={"auth/popup-closed-by-user":"","auth/cancelled-popup-request":"","auth/too-many-requests":"Muitas tentativas. Espere um pouco e tente de novo.","auth/network-request-failed":"Sem internet. Confira a conexão.","auth/operation-not-allowed":"Ative o login do Google no Firebase (Authentication › Método de login).","auth/unauthorized-domain":"Este endereço não está autorizado. Adicione o domínio em Authentication › Configurações › Domínios autorizados."};
+function negar(){g("lerr").textContent="Essa conta Google não tem acesso ao admin.";signOut(auth)}
+async function entrar(){
+ g("lerr").textContent="";g("enter").disabled=true;
+ const pr=new GoogleAuthProvider();pr.setCustomParameters({prompt:"select_account"});
+ try{await signInWithPopup(auth,pr)}
+ catch(x){
+  if(x&&(x.code==="auth/popup-blocked"||x.code==="auth/operation-not-supported-in-this-environment")){try{await signInWithRedirect(auth,pr);return}catch(y){x=y}}
+  const m=x&&ERR[x.code];g("lerr").textContent=m===undefined?"Não foi possível entrar.":m}
+ g("enter").disabled=false}
+g("enter").onclick=entrar;
+getRedirectResult(auth).catch(x=>{const m=x&&ERR[x.code];g("lerr").textContent=m===undefined?"Não foi possível entrar.":m});
+g("out").onclick=()=>signOut(auth);
+
+/* ===== estado do trancamento ===== */
+let LK=null,un=null;
+const lockRef=()=>doc(db,"config","lock");
+function isOn(d){if(!d||d.locked!==true)return false;if(d.mode==="timed"){const ms=d.until&&d.until.toMillis?d.until.toMillis():0;return ms>Date.now()}return d.mode==="indefinite"}
+function showStatus(){
+ const on=isOn(LK),st=g("st");
+ st.className="st"+(on?" lock":"");g("sic").innerHTML=on?LOCKI:OPENI;
+ g("unl").classList.toggle("hide",!on);
+ if(!on){g("stt").textContent="Site liberado";g("sts").textContent="Todo mundo pode publicar, curtir e votar.";return}
+ if(LK.mode==="timed"){const ms=LK.until.toMillis();g("stt").textContent="Site trancado";g("sts").textContent="Libera sozinho em "+fmt(ms)+" · faltam "+dur(ms-Date.now())}
+ else{g("stt").textContent="Site trancado";g("sts").textContent="Por tempo indeterminado, até você destrancar."}}
+function listen(){
+ if(un)un();
+ un=onSnapshot(lockRef(),s=>{LK=s.exists()?s.data():null;showStatus()},()=>{g("stt").textContent="Sem acesso";g("sts").textContent="Confira se as regras do Firestore foram publicadas e se este e-mail é o do admin."})}
+setInterval(()=>{if(LK)showStatus()},20000);
+
+onAuthStateChanged(auth,u=>{
+ if(u&&String(u.email||"").toLowerCase()!==ADMIN){negar();return}
+ const in_=!!u;
+ g("login").classList.toggle("hide",in_);g("panel").classList.toggle("hide",!in_);g("out").classList.toggle("hide",!in_);
+ if(in_){listen();pv()}else{if(un){un();un=null}LK=null}});
+
+/* ===== formulário ===== */
+let mode=0,mins=60;
+function setMode(m){mode=m;g("m0").classList.toggle("on",m===0);g("m1").classList.toggle("on",m===1);g("pill").style.transform=m?"translateX(100%)":"none";g("timed").classList.toggle("hide",m===0);pv()}
+g("m0").onclick=()=>setMode(0);g("m1").onclick=()=>setMode(1);
+g("chips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;mins=+b.dataset.m;[...g("chips").children].forEach(x=>x.classList.toggle("on",x===b));g("custom").classList.toggle("hide",mins!==0);if(mins!==0){g("dt").value="";["nd","nh","nm"].forEach(i=>g(i).value="")}pv()});
+["nd","nh","nm"].forEach(i=>g(i).addEventListener("input",()=>{g("dt").value="";pv()}));
+g("dt").addEventListener("input",()=>{if(g("dt").value)["nd","nh","nm"].forEach(i=>g(i).value="");pv()});
+/* devolve {ms, tempo} ou null */
+function plan(){
+ if(mode===0)return{ms:0,tempo:""};
+ if(mins===0){
+  const c=g("dt").value;
+  if(c){const ms=parseBR(c);if(ms<=Date.now()+60000)return null;return{ms,tempo:dur(ms-Date.now())}}
+  const t=Math.min(365,Math.max(0,Math.floor(+g("nd").value||0)))*864e5+Math.max(0,Math.floor(+g("nh").value||0))*36e5+Math.max(0,Math.floor(+g("nm").value||0))*6e4;
+  if(t<60000)return null;return{ms:Date.now()+t,tempo:dur(t)}}
+ const d=mins*60000;return{ms:Date.now()+d,tempo:dur(d)}}
+function pv(){
+ const p=plan(),e=g("pv");
+ if(mode===0){e.textContent="O site fica trancado até você tocar em “Destrancar agora”.";return}
+ if(!p){e.textContent="Informe quanto tempo vai ficar trancado ou escolha uma data futura.";return}
+ e.textContent="Trancado por "+p.tempo+". Libera sozinho em "+fmt(p.ms)+"."}
+setInterval(()=>{if(mode===1&&!g("dt").value)pv()},30000);
+
+async function trancar(){
+ const p=plan();if(!p){toast("Informe a duração ou uma data futura");return}
+ const d={locked:true,mode:mode===0?"indefinite":"timed",at:serverTimestamp(),by:auth.currentUser.email||""};
+ if(mode===1){d.until=Timestamp.fromMillis(p.ms);d.tempo=p.tempo}
+ g("lock").disabled=true;
+ try{await setDoc(lockRef(),d);toast("Site trancado")}
+ catch(e){toast(e&&e.code==="permission-denied"?"Sem permissão: este e-mail não é o do admin nas regras":"Não foi possível trancar")}
+ g("lock").disabled=false}
+async function destrancar(){
+ g("unl").disabled=true;
+ try{await setDoc(lockRef(),{locked:false,mode:"off",at:serverTimestamp(),by:auth.currentUser.email||""});toast("Site liberado")}
+ catch(e){toast(e&&e.code==="permission-denied"?"Sem permissão: este e-mail não é o do admin nas regras":"Não foi possível destrancar")}
+ g("unl").disabled=false}
+g("lock").onclick=trancar;g("unl").onclick=destrancar;
+setMode(0);
+</script>
+</body>
+</html>
