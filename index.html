@@ -906,7 +906,7 @@ function loadCache(){try{var c=JSON.parse(localStorage.getItem(CK)||"null");if(c
 function conv(d){var x=d.data({serverTimestamps:"estimate"});x.id=d.id;x.ms=x.createdAt&&x.createdAt.toMillis?x.createdAt.toMillis():Date.now();x.exp=x.expireAt&&x.expireAt.toMillis?x.expireAt.toMillis():x.ms+TTL;delete x.createdAt;delete x.expireAt;return x}
 function clean(x){if(!alive(x)&&x.uid===S.uid&&!CLN[x.id]&&!lkOn()){CLN[x.id]=1;deleteDoc(doc(db,"posts",x.id)).catch(function(){})}}
 function upsert(x){var i=-1,k;for(k=0;k<S.feed.length;k++)if(S.feed[k].id===x.id){i=k;break}if(i<0)S.feed.push(x);else S.feed[i]=x}
-function bootDone(){var w=1200-(Date.now()-S.bt);if(w<=0){S.boot=false;return}if(S.bdt)return;S.bdt=1;setTimeout(function(){S.boot=false;render()},w)}
+function bootDone(){var w=400-(Date.now()-S.bt);if(w<=0){S.boot=false;return}if(S.bdt)return;S.bdt=1;setTimeout(function(){S.boot=false;render()},w)}
 function afterMerge(){S.feed=S.feed.filter(alive);sortFeed();track(S.feed);S.loaded=true;S.err="";bootDone();render()}
 
 function mine(){return S.feed.filter(function(x){return x.uid===S.uid})}
