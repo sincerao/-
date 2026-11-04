@@ -1239,7 +1239,7 @@ function accRender(){
  if(S.verified&&S.acc==="no")accErr("esse email não tem autorização.");
 }
 async function gLogin(){
- var pr=new GoogleAuthProvider();pr.setCustomParameters({prompt:"select_account"});
+ var pr=new GoogleAuthProvider();
  var u=AUTH&&AUTH.currentUser;
  try{
   if(u&&u.isAnonymous){
