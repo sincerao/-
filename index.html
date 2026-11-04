@@ -791,7 +791,7 @@ const SHARE='<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="
 const SRVW="No momento o servidor está indisponível, aguarde.";
 const BAN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>';
 const CHAT='<svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
-const S={boot:true,bt:Date.now(),tab:0,kind:"post",feed:[],loaded:false,uid:null,ready:false,started:false,myV:{},myM:{},myL:{},myW:{},sids:null,err:"",seen:{},pop:0,vf:0,del:"",lim:15,more:false,busy:false,un:null,vis:{},fresh:{},known:{}};
+const S={verified:false,boot:true,bt:Date.now(),tab:0,kind:"post",feed:[],loaded:false,uid:null,ready:false,started:false,myV:{},myM:{},myL:{},myW:{},sids:null,err:"",seen:{},pop:0,vf:0,del:"",lim:15,more:false,busy:false,un:null,vis:{},fresh:{},known:{}};
 let LAST="",db,initializeApp,getAuth,signInAnonymously,onAuthStateChanged,linkWithPopup,signInWithPopup,signInWithCredential,GoogleAuthProvider,AUTH,getFirestore,collection,doc,addDoc,deleteDoc,writeBatch,query,orderBy,limit,onSnapshot,serverTimestamp,increment,deleteField,setDoc,where,getCountFromServer,getDocs,Timestamp,initializeFirestore,persistentLocalCache,persistentMultipleTabManager;
 
 function g(id){return document.getElementById(id)}
@@ -1228,14 +1228,15 @@ function accWatch(u){
  S.accE=e;
  if(!e){S.acc="no";accRender();return}
  S.acc="load";accRender();
- try{ACU=onSnapshot(doc(db,"access",e),function(s){S.acc=s.exists()?"ok":"no";accRender();if(S.acc==="ok"&&S.uid)start()},function(){S.acc="no";accRender()})}catch(x){S.acc="no"}
+ try{ACU=onSnapshot(doc(db,"access",e),function(s){S.acc=s.exists()?"ok":"no";if(S.acc!=="ok"&&S.started){location.reload();return}accRender();if(S.acc==="ok"&&S.verified&&S.uid)start()},function(){S.acc="no";accRender()})}catch(x){S.acc="no"}
 }
 function accErr(m){g("gE").textContent=m}
 function accRender(){
  var gate=g("gate");
- if(S.acc==="ok"){gate.classList.add("hide");return}
+ if(S.acc==="ok"&&S.verified){gate.classList.add("hide");accErr("");return}
  gate.classList.remove("hide");
  gate.classList.toggle("busy",!AUTH||S.acc==="load");
+ if(S.verified&&S.acc==="no")accErr("esse email não tem autorização.");
 }
 async function gLogin(){
  var pr=new GoogleAuthProvider();pr.setCustomParameters({prompt:"select_account"});
@@ -1245,7 +1246,7 @@ async function gLogin(){
    try{await linkWithPopup(u,pr)}
    catch(x){if(x&&x.code==="auth/credential-already-in-use"){await signInWithCredential(AUTH,GoogleAuthProvider.credentialFromError(x));location.reload();return}throw x}
   }else{await signInWithPopup(AUTH,pr)}
-  accWatch(AUTH.currentUser);
+  S.verified=true;accWatch(AUTH.currentUser);
  }catch(x){
   if(x&&(x.code==="auth/popup-closed-by-user"||x.code==="auth/cancelled-popup-request"))return;
   accErr("Não foi possível entrar com o Google");
@@ -1256,7 +1257,7 @@ function authFail(){S.err="Ocorreu um erro na autenticação";render();clearTime
 async function init(){
  if(SETUP)return;
  S.st="import";
- setTimeout(function(){if(!S.loaded&&!S.err){var n={import:"carregando o Firebase",login:"login",feed:"buscando as publicações"};S.err="Falha ao se conectar com o servidor.";render()}},12000);
+ setTimeout(function(){if(S.verified&&!S.loaded&&!S.err){var n={import:"carregando o Firebase",login:"login",feed:"buscando as publicações"};S.err="Falha ao se conectar com o servidor.";render()}},12000);
  try{
   var V="https://www.gstatic.com/firebasejs/10.14.1/";
   var m=await Promise.all([import(V+"firebase-app.js"),import(V+"firebase-auth.js"),import(V+"firebase-firestore.js")]);
@@ -1266,7 +1267,7 @@ async function init(){
   var app=initializeApp(firebaseConfig),auth=getAuth(app);try{db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})})}catch(e){db=getFirestore(app)}
   watchLock();
   AUTH=auth;
-  onAuthStateChanged(auth,function(u){accWatch(u);if(u){S.uid=u.uid;S.st="feed";if(S.err==="Ocorreu um erro na autenticação"){S.err="";render()}if(S.acc==="ok")start()}},function(){authFail()});
+  onAuthStateChanged(auth,function(u){accWatch(u);if(u){S.uid=u.uid;S.st="feed";if(S.err==="Ocorreu um erro na autenticação"){S.err="";render()}if(S.acc==="ok"&&S.verified)start()}},function(){authFail()});
   signInAnonymously(auth).catch(authFail);
  }catch(e){S.err="Falha ao se conectar com o servidor.";render()}}
 
