@@ -1244,7 +1244,7 @@ async function gLogin(){
  try{
   if(u&&u.isAnonymous){
    try{await linkWithPopup(u,pr)}
-   catch(x){if(x&&x.code==="auth/credential-already-in-use"){await signInWithCredential(AUTH,GoogleAuthProvider.credentialFromError(x));location.reload();return}throw x}
+   catch(x){if(x&&x.code==="auth/credential-already-in-use"){var r=await signInWithCredential(AUTH,GoogleAuthProvider.credentialFromError(x));S.uid=r.user.uid;S.verified=true;accWatch(r.user);return}throw x}
   }else{await signInWithPopup(AUTH,pr)}
   S.verified=true;accWatch(AUTH.currentUser);
  }catch(x){
